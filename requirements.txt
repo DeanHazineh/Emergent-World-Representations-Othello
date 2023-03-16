@@ -1,0 +1,6 @@
+pgnparser
+numpy
+tqdm
+seaborn
+pickle
+black
