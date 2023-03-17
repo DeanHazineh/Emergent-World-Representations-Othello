@@ -1,6 +1,7 @@
 import itertools
 import torch
 from torch.utils.data import Dataset
+import numpy as np
 
 
 class CharDataset(Dataset):
@@ -79,3 +80,28 @@ class CharDataset(Dataset):
         x = torch.tensor(dix[:-1], dtype=torch.long)
         y = torch.tensor(dix[1:], dtype=torch.long)
         return x, y
+
+
+class ProbingDataset(Dataset):
+    def __init__(self, act, y, age):
+        assert len(act) == len(y)
+        assert len(act) == len(age)
+        print(f"{len(act)} pairs loaded...")
+        self.act = act
+        self.y = y
+        self.age = age
+        print(np.sum(np.array(y) == 0), np.sum(np.array(y) == 1), np.sum(np.array(y) == 2))
+
+        long_age = []
+        for a in age:
+            long_age.extend(a)
+        long_age = np.array(long_age)
+        counts = [np.count_nonzero(long_age == i) for i in range(60)]
+        del long_age
+        print(counts)
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        return self.act[idx], torch.tensor(self.y[idx]).to(torch.long), torch.tensor(self.age[idx]).to(torch.long)

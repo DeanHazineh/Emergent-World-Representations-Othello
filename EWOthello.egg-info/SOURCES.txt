@@ -856,5 +856,10 @@ EWOthello/mingpt/utils.py
 EWOthello/mingpt/__pycache__/__init__.cpython-38.pyc
 EWOthello/mingpt/__pycache__/dataset.cpython-38.pyc
 EWOthello/mingpt/__pycache__/model.cpython-38.pyc
+EWOthello/mingpt/__pycache__/probe_model.cpython-38.pyc
 EWOthello/mingpt/__pycache__/trainer.cpython-38.pyc
 EWOthello/mingpt/__pycache__/utils.cpython-38.pyc
+EWOthello/utils/__init__.py
+EWOthello/utils/plot_helpers.py
+EWOthello/utils/__pycache__/__init__.cpython-38.pyc
+EWOthello/utils/__pycache__/plot_helpers.cpython-38.pyc
