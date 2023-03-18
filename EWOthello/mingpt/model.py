@@ -318,3 +318,42 @@ class GPTforProbeIA(GPT):
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
         return logits, loss
+
+
+# In their code, they redefine a list of these models for each probe layer but we can just define a single object
+# if we modify Li's implementation a little bit
+class GPTforProbeIA_ModV1(GPT):
+    def __init__(self, config):
+        super().__init__(config)
+
+    def forward_1st_stage(self, probe_layer, idx):
+        b, t = idx.size()  # both of shape [B, T]
+        assert t <= self.block_size, "Cannot forward, model block size is exhausted."
+
+        # forward the GPT model
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        position_embeddings = self.pos_emb[:, :t, :]  # each position maps to a (learnable) vector
+        x = self.drop(token_embeddings + position_embeddings)
+
+        for b in self.blocks[:probe_layer]:
+            x = b(x)
+
+        return x
+
+    def forward_2nd_stage(self, x, start_layer, end_layer=-1):
+        tbr = []
+        if end_layer == -1:
+            end_layer = self.n_layer + 1
+        for b in self.blocks[start_layer:end_layer]:
+            x = b(x)
+            tbr.append(x)
+        return tbr
+
+    def predict(self, x, targets=None):
+        x = self.ln_f(x)  # [B, T, f]
+        logits = self.head(x)  # [B, T, # Words]
+        # if we are given some desired targets also calculate the loss
+        loss = None
+        if targets is not None:
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
+        return logits, loss
