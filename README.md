@@ -1,5 +1,4 @@
-# emergent_world_representation
-Team repository for in-development CS221 Project
+# Team repository for in-development CS221 Project
 
 - Team scripts are in folder dev_code/
 - Original scripts from the official paper repository are included in folder KLiScripts/
