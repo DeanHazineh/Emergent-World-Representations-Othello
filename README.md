@@ -1,12 +1,10 @@
-# emergent_world_representation
-CS221
+# Team repository for in-development CS221 Project
 
-Scripts I was writing and testing are in dev_Code.
-KLiScripts contains the original scripts from Li's repository to serve as references 
-
+- Team scripts are in folder dev_code/
+- Original scripts from the official paper repository are included in folder KLiScripts/
 
 ### Install
-If locally, move to the folder and run in temrminal,
+If locally, move to the folder and install via,
 ```
 python setup.py develop
 ```
