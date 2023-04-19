@@ -72,8 +72,8 @@ def get_ood_game(_):
     return tbr
 
 
-def get(ood_perc=0.0, data_root=None, wthor=False, ood_num=1000):
-    return Othello(ood_perc, data_root, wthor, ood_num)
+def get(ood_perc=0.0, data_root=None, wthor=False, ood_num=1000, num_preload=10):
+    return Othello(ood_perc, data_root, wthor, ood_num, num_preload=num_preload)
 
 
 def get_data_path(data_root):
@@ -82,7 +82,7 @@ def get_data_path(data_root):
 
 
 class Othello:
-    def __init__(self, ood_perc=0.0, data_root=None, wthor=False, ood_num=1000):
+    def __init__(self, ood_perc=0.0, data_root=None, wthor=False, ood_num=1000, num_preload=10):
         """If data_root is not None, all professional games data will be loaded instead of synthetic games. WTHOR flag controls whether WTHOR games will be included
         in the professional game set or just liveothello games. If data_root is None, then ood_num of synthetic games will be loaded and stored in class.
 
@@ -110,9 +110,14 @@ class Othello:
                     if ood_num > 1000:
                         with open(datpath.joinpath(f"gen10e5_{t_start}.pickle"), "wb") as handle:
                             pickle.dump(self.sequences, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
                 else:  # Load the saved synthetic games pickles
-                    bar = tqdm(os.listdir(datpath))
+                    listfiles = os.listdir(datpath)
+                    num_files = len(listfiles)
+                    use_number = np.minimum(num_files, int(num_preload))
+                    print(f"Max num files: {num_files}; Use_num: {use_number}")
+                    print(listfiles[:use_number])
+
+                    bar = tqdm(listfiles[:use_number])
                     trash = []
                     cnt = 0
                     for f in bar:

@@ -3,18 +3,16 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
+from EWOthello.mingpt.model import GPT, GPTConfig, GPTforProbing
+from EWOthello.data.othello import OthelloBoardState
+
 
 class CharDataset(Dataset):
     def __init__(self, data):
         if hasattr(data, "ood_perc"):
             ood_perc = data.ood_perc
             data.ood_perc = 0  # shut down the randomness
-        chars = sorted(
-            list(set(list(itertools.chain.from_iterable(data))))
-            + [
-                -100,
-            ]
-        )
+        chars = sorted(list(set(list(itertools.chain.from_iterable(data)))) + [-100])
 
         data_size, vocab_size = len(data), len(chars)  # vocab size 61, with -100 sorted to the front
         max_len = max([len(data[_]) for _ in range(len(data))])  # should be 60 in Othello
@@ -105,3 +103,40 @@ class ProbingDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.act[idx], torch.tensor(self.y[idx]).to(torch.long), torch.tensor(self.age[idx]).to(torch.long)
+
+
+### Dean modification of the probing dataset which enables the new board state representation
+class probe_dataset(Dataset):
+    def __init__(self, game_dataset, probe_layer, property_type="new", device="cpu"):
+        self.game_dataset = game_dataset
+        self.property_type = property_type  # 'old' vs 'new'
+        self.property_modifier = np.concatenate([np.ones((1, 64)) * (-1) ** i for i in range(59)], axis=0)
+        self.device = device
+
+        # Define the GPT probe model to return activations
+        mconf = GPTConfig(game_dataset.vocab_size, game_dataset.block_size, n_layer=8, n_head=8, n_embd=512)
+        GPT_probe = GPTforProbing(mconf, probe_layer=probe_layer)
+        GPT_probe.load_state_dict(torch.load("../EWOthello/ckpts/gpt_synthetic.ckpt"))
+        for param in GPT_probe.parameters():
+            param.requires_grad = False
+        GPT_probe.eval()
+        self.GPT_probe = GPT_probe.to(device)
+
+    def __len__(self):
+        return len(self.game_dataset)
+
+    def __getitem__(self, index):
+        x, _ = self.game_dataset[index]
+        tbf = [self.game_dataset.itos[_] for _ in x.tolist()]
+        valid_until = tbf.index(-100) if -100 in tbf else 999
+
+        # Get the board state vectors
+        a = OthelloBoardState()
+        board_state = a.get_gt(tbf[:valid_until], "get_state")
+        if self.property_type == "new":
+            board_state = (np.array(board_state) - 1.0) * self.property_modifier[:valid_until, :] + 1.0
+
+        # Get the activation vectors
+        act = self.GPT_probe(x[None, :].to(self.device))[0, :valid_until, :].detach().cpu()
+
+        return act, torch.tensor(board_state, dtype=torch.float32)

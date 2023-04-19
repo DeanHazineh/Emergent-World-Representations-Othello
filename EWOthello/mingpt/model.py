@@ -238,6 +238,48 @@ class GPTforProbing(GPT):
             return x
 
 
+class GPTforProbing_v2(GPT):
+    def __init__(self, config, probe_layer=-1, ln=False):
+        super().__init__(config)
+
+        self.probe_layer = self.n_layer if probe_layer == -1 else probe_layer
+        assert self.probe_layer <= self.n_layer and self.probe_layer >= 0, "Invalid layer index to probe"
+        self.ln = ln
+
+    def forward(self, idx, return_att=False):
+        b, t = idx.size()  # both of shape [B, T]
+        assert t <= self.block_size, "Cannot forward, model block size is exhausted."
+
+        # forward the GPT model
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        position_embeddings = self.pos_emb[:, :t, :]  # each position maps to a (learnable) vector
+        x = self.drop(token_embeddings + position_embeddings)
+
+        hold_act = []
+        for b in self.blocks[: self.probe_layer]:
+            if return_att:
+                x, att = b(x, return_att=return_att)
+            else:
+                x = b(x, return_att=return_att)
+
+        hold_act.extend(x)
+        for b in self.blocks[self.probe_layer :]:
+            if return_att:
+                x, att = b(x, return_att=return_att)
+                hold_act.extend(x)
+            else:
+                x = b(x, return_att=return_att)
+                hold_act.extend(x)
+
+        # if self.ln:
+        #     x = self.ln_f(x)  # [B, T, f]
+        # # logits = self.head(x)  # [B, T, # Words]
+        if return_att:
+            return hold_act, att
+        else:
+            return hold_act
+
+
 class GPTforIntervention(GPT):
     def __init__(self, config, probe_layer=-1):
         super(GPTforIntervention, self).__init__(config)
@@ -304,9 +346,11 @@ class GPTforProbeIA(GPT):
         tbr = []
         if end_layer == -1:
             end_layer = self.n_layer + 1
+
         for b in self.blocks[start_layer:end_layer]:
             x = b(x)
             tbr.append(x)
+
         # x = self.ln_f(x)  # [B, T, f]
         return tbr
 
@@ -329,6 +373,8 @@ class GPTforProbeIA_ModV1(GPT):
     def forward_1st_stage(self, probe_layer, idx):
         b, t = idx.size()  # both of shape [B, T]
         assert t <= self.block_size, "Cannot forward, model block size is exhausted."
+        if probe_layer == -1:
+            probe_layer = self.n_layer
 
         # forward the GPT model
         token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
@@ -344,6 +390,7 @@ class GPTforProbeIA_ModV1(GPT):
         tbr = []
         if end_layer == -1:
             end_layer = self.n_layer + 1
+
         for b in self.blocks[start_layer:end_layer]:
             x = b(x)
             tbr.append(x)

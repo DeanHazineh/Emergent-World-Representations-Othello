@@ -8,14 +8,20 @@ from torch.nn import functional as F
 
 class BatteryProbeClassification(nn.Module):
     # combines 64 classification problem for the case of Othello
-    def __init__(self, device, probe_class, num_task, input_dim=512):  # from 0 to 15
+    def __init__(self, device, probe_class, num_task, input_dim=512, train_bias=True):  # from 0 to 15
         super().__init__()
         self.input_dim = input_dim
         self.probe_class = probe_class
         self.num_task = num_task
+        self.device = device
+
         self.proj = nn.Linear(self.input_dim, self.probe_class * self.num_task, bias=True)
         self.apply(self._init_weights)
-        self.to(device)
+        if train_bias == False:
+            with torch.no_grad():
+                self.proj.bias.zero_()
+                self.proj.bias.requires_grad_(False)
+        self.proj = self.proj.to(device)
 
     def forward(self, act, y=None):
         # [B, f], [B, #task]

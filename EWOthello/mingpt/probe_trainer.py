@@ -61,9 +61,7 @@ class Trainer:
         self.train_strat_acc_cont = []
         self.test_strat_acc_cont = []
 
-    def flush_plot(
-        self
-    ):
+    def flush_plot(self):
         # plt.close()
         fig, axs = plt.subplots(1, 2, figsize=(20, 10), dpi=80, facecolor="w", edgecolor="k")
         axs = axs.flat
@@ -77,9 +75,7 @@ class Trainer:
         axs[1].legend()
         plt.show()
 
-    def save_traces(
-        self
-    ):
+    def save_traces(self):
         tbd = {
             "train_loss_cont": self.train_loss_cont,
             "test_loss_cont": self.test_loss_cont,
