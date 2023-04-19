@@ -4,3 +4,4 @@ tqdm
 seaborn
 pickle
 black
+scipy
