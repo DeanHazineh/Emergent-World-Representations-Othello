@@ -2,6 +2,11 @@ import matplotlib.pyplot as plt
 from EWOthello.data.othello import permit_reverse
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+# from matplotlib.colors import ListedColormap
+
+# colors = ["black", "white", "yellow"]
+# colormap = ListedColormap(colors)
+
 
 def seq_to_boardCoord(sequence):
     return [permit_reverse(move) for move in sequence]
@@ -19,7 +24,6 @@ def format_ax_boardImage(ax):
         thisaxis.set_yticklabels("ABCDEFGH")
         thisaxis.set_xticks(ticks=list(range(0, 8)))
         thisaxis.set_xticklabels(list(range(1, 9)))
-
     return
 
 
