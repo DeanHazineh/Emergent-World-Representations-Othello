@@ -17,10 +17,10 @@ class BatteryProbeClassification(nn.Module):
 
         self.proj = nn.Linear(self.input_dim, self.probe_class * self.num_task, bias=True)
         self.apply(self._init_weights)
-        if train_bias == False:
-            with torch.no_grad():
-                self.proj.bias.zero_()
-                self.proj.bias.requires_grad_(False)
+        # if train_bias == False:
+        #     with torch.no_grad():
+        #         self.proj.bias.zero_()
+        #         self.proj.bias.requires_grad_(False)
         self.proj = self.proj.to(device)
 
     def forward(self, act, y=None):

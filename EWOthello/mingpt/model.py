@@ -387,14 +387,17 @@ class GPTforProbeIA_ModV1(GPT):
         return x
 
     def forward_2nd_stage(self, x, start_layer, end_layer=-1):
-        tbr = []
         if end_layer == -1:
             end_layer = self.n_layer + 1
 
-        for b in self.blocks[start_layer:end_layer]:
-            x = b(x)
-            tbr.append(x)
-        return tbr
+        if start_layer == self.n_layer:
+            return [x]
+        else:
+            tbr = []
+            for b in self.blocks[start_layer:end_layer]:
+                x = b(x)
+                tbr.append(x)
+            return tbr
 
     def predict(self, x, targets=None):
         x = self.ln_f(x)  # [B, T, f]
