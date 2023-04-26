@@ -2,6 +2,8 @@ pgnparser
 numpy
 tqdm
 seaborn
-pickle
 black
 scipy
+git+https://github.com/neelnanda-io/TransformerLens.git
+git+https://github.com/neelnanda-io/neel-plotly
+circuitsvis

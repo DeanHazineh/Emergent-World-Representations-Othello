@@ -2,6 +2,28 @@ Metadata-Version: 2.1
 Name: EWOthello
 Version: 1.0
 Summary: Dev package to probe Othello
+Home-page: UNKNOWN
 Author: Dean Hazineh
 Author-email: dhazineh@g.harvard.edu
+License: UNKNOWN
+Description: # Team repository for in-development CS221 Project
+        
+        - Team scripts are in folders dev_code2/ (or dev_code/ for pre-progress updated scripts)
+        - Original scripts from the official paper repository are included in folder KLiScripts/ for reference
+        
+        ### Install
+        
+        If locally, move to the folder and install via,
+        
+        ```
+        python setup.py develop
+        ```
+        
+        You can then install additional dependencies via
+        
+        ```
+        pip install -r requirements.txt
+        ```
+        
+Platform: UNKNOWN
 Description-Content-Type: text/markdown
