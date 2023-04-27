@@ -27,7 +27,9 @@ def format_ax_boardImage(ax):
     return
 
 
-def addColorbar(thisfig, thisax, thisim, cbartitle=""):
+def addColorbar(thisfig, thisax, thisim=None, cbartitle=""):
+    if thisim == None:
+        thisim = thisax.images[0]
     divider = make_axes_locatable(thisax)
     cax = divider.append_axes("right", size="8%", pad=0.05)
     cbar = thisfig.colorbar(thisim, cax=cax, orientation="vertical")
