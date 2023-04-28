@@ -1,7 +1,10 @@
-# Team repository for in-development CS221 Project
+# Probing Emergent World Representations in Attention-Based LLMs trained to Play Othello
 
-- Team scripts are in folders dev_code2/ (or dev_code/ for pre-progress updated scripts)
-- Original scripts from the official paper repository are included in folder EWOthello/KLiScripts/ for reference
+## Summary:
+
+## Inside the Repository:
+- Team scripts are in folders dev_code2/ 
+- Original scripts from the official paper repository are included in folder EWOthello/KLiScripts/ for reference. 
 
 ### Install
 
