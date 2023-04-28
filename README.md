@@ -1,4 +1,4 @@
-# Probing Emergent World Representations in Attention-Based LLMs trained to Play Othello
+# Probing Emergent World Representations in Attention-Based LLMs: GPT trained to play Othello
 
 ## Summary:
 
