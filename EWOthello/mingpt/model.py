@@ -9,7 +9,6 @@ GPT model:
 
 import math
 import logging
-
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -63,6 +62,11 @@ class CausalSelfAttention(nn.Module):
         k = self.key(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
         q = self.query(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
         v = self.value(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
+
+        # Store k,q,and v to the block attribute
+        self.k = k
+        self.q = q
+        self.v = v
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
@@ -241,7 +245,6 @@ class GPTforProbing(GPT):
 class GPTforProbing_v2(GPT):
     def __init__(self, config, probe_layer=-1, ln=False):
         super().__init__(config)
-
         self.probe_layer = self.n_layer if probe_layer == -1 else probe_layer
         assert self.probe_layer <= self.n_layer and self.probe_layer >= 0, "Invalid layer index to probe"
         self.ln = ln
@@ -407,3 +410,36 @@ class GPTforProbeIA_ModV1(GPT):
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
         return logits, loss
+
+
+###
+
+
+class GPT_Mechanistic_Interp(GPT):
+    def __init__(self, config, ln=False):
+        super().__init__(config)
+        self.ln = ln
+
+    def forward(self, idx):
+        b, t = idx.size()  # both of shape [B, T]
+        assert t <= self.block_size, "Cannot forward, model block size is exhausted."
+
+        # forward the GPT model
+        token_embeddings = self.tok_emb(idx)  # each index maps to a (learnable) vector
+        position_embeddings = self.pos_emb[:, :t, :]  # each position maps to a (learnable) vector
+        x = self.drop(token_embeddings + position_embeddings)
+
+        hold_att = []
+        hold_q = []
+        hold_k = []
+        hold_v = []
+        for b in self.blocks:
+            x, att = b(x, return_att=True)
+            hold_att.append(att.detach().numpy())
+            hold_k.append(b.attn.k.detach().numpy())
+            hold_q.append(b.attn.q.detach().numpy())
+            hold_v.append(b.attn.v.detach().numpy())
+        x = self.ln_f(x)  # [B, T, f]
+        logits = self.head(x)  # [B, T, # Words]
+
+        return hold_att, hold_q, hold_k, hold_v, logits
