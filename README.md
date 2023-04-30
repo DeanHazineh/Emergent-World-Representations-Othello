@@ -7,8 +7,7 @@ In this project, we extend the investigations presented by Kenneth Li et al. in 
 - Lastly, we train several GPT models of different sizes (number of attention blocks and number of heads) and show that the world representation only appears for deep models rather than shallow. By modifying the intervention scheme, we also show that in all cases, the causality of the world representation depends on the probe-layer.
 
 ## Inside the Repository:
-- The scripts to produce all figures, data, and trained models are included in folders dev_code2/ 
-- Original scripts from the official paper repository are included in folder EWOthello/KLiScripts/ for reference. 
+The scripts to produce all figures, data, and trained models are included in folders dev_code2/. Original scripts from the official paper repository are included in folder EWOthello/KLiScripts/ for reference. 
 
 ### Install Locally
 After cloning the repository, create a new conda environment (or equivalent). Then cd to the folder and install the codebase EWOthello as a python package via,
