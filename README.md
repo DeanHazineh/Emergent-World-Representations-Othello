@@ -1,6 +1,8 @@
 # Probing Emergent World Representations in Attention-Based LLMs: GPT trained to play Othello
 
 ## Summary:
+In this project, we extend the investigation presented by Kenneth Li et al. in their ICLR2023 Paper "EMERGENT WORLD REPRESENTATIONS: EXPLORING A
+SEQUENCE MODEL TRAINED ON A SYNTHETIC TASK" (https://arxiv.org/pdf/2210.13382.pdf). 
 
 ## Inside the Repository:
 - Team scripts are in folders dev_code2/ 
