@@ -15,3 +15,10 @@ You can then install additional dependencies via
 ```
 pip install -r requirements.txt
 ```
+You should then be able to run all scripts. It is also possible to run the code in this repository (unverified) on google collab by adding the following lines:
+'''
+!git lfs install
+!git clone https://github.com/DeanHazineh/Emergent-World-Representations-Othello
+%cd /content/Emergent-World-Representations-Othello
+!python setup.py develop
+'''
