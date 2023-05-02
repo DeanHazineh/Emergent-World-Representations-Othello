@@ -1,7 +1,7 @@
 # Probing Emergent World Representations in Attention-Based LLMs: GPT trained to play Othello
 
 ## Summary:
-In this project, we extend the investigations presented by Kenneth Li et al. in their ICLR2023 Paper [Emergent World Representations: Exploring a Sequence Model Trained on a Synthetic Task](https://arxiv.org/pdf/2210.13382.pdf). We contribute the following improvements and new insights: 
+In this project, we extend the investigations presented by Kenneth Li et al. in their ICLR2023 Paper [Emergent World Representations: Exploring a Sequence Model Trained on a Synthetic Task](https://arxiv.org/pdf/2210.13382.pdf). We contribute the following new insights: 
 
 - We first show that trained linear probes can accurately map the activation vectors of a GPT model, pre-trained to play legal moves in the game Othello, to the current state of the othello board. This is in contrast to the utilization of the non-linear MLP as probes. 
 <img src=/images/new_world_representation.png alt="drawing" width="100%"/>
