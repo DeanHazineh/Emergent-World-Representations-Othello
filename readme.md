@@ -1,5 +1,7 @@
 # Probing Emergent World Representations in Transformer Networks: Sequential Models Trained to Play Othello
 
+[Read the write-up for this project at the included pdf](Probing Emergent World Representations in Transformer Networks.pdf)
+
 ## Summary:
 In this project, we extend the investigations presented by Kenneth Li et al. in their ICLR 2023 Paper [Emergent World Representations: Exploring a Sequence Model Trained on a Synthetic Task](https://arxiv.org/pdf/2210.13382.pdf). We contribute the following new insights: 
 
