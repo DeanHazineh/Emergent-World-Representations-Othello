@@ -1,5 +1,5 @@
 # Probing Emergent World Representations in Transformer Networks: Sequential Models Trained to Play Othello
-## [Read the write-up for this project at the included pdf](Documents/Probing_Emergent_World_Representations_in_Transformer_Networks.pdf)
+## [Read the PDF write-up for this project here](Documents/Probing_Emergent_World_Representations_in_Transformer_Networks.pdf)
 
 ## Summary:
 <div align="center">
@@ -26,7 +26,7 @@ You can then install additional dependencies via
 ```
 pip install -r requirements.txt
 ```
-You should then be able to run all scripts. It is also possible to run the code in this repository (unverified) on google collab by adding the following lines:
+You should then be able to run all scripts.It is also possible to run the code in this repository (unverified) on google collab by adding the following lines:
 ```
 !git lfs install
 !git clone https://github.com/DeanHazineh/Emergent-World-Representations-Othello
