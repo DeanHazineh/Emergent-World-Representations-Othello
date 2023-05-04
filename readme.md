@@ -3,7 +3,7 @@
 [Read the write-up for this project at the included pdf](Probing_Emergent_World_Representations_in_Transformer_Networks.pdf)
 
 ## Summary:
-In this project, we extend the investigations presented by Kenneth Li et al. in their ICLR 2023 Paper [Emergent World Representations: Exploring a Sequence Model Trained on a Synthetic Task](https://arxiv.org/pdf/2210.13382.pdf). We contribute the following new insights: 
+In this project, we extend the investigations presented by Kenneth Li et al. in their ICLR 2023 Paper Emergent World Representations: Exploring a Sequence Model Trained on a Synthetic Task. We contribute the following new insights: 
 
 - We first show that trained linear probes can accurately map the activation vectors of a GPT-model, pre-trained to play legal moves in the game Othello, to the current state of the othello board. This is in contrast to the utilization of the non-linear MLP as probes. 
 - We also show that changes to the "world model", visualized by the linear probes, are causal with respect to the model's next-move predictions. This is demonstrated for complex board changes in addition to single tile flips. By modifying the intervention scheme, we provide new insights that the causality of the world representation depends on the layer.
