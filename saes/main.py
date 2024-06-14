@@ -1,19 +1,18 @@
 import torch 
+from tqdm import tqdm
 
-from saes.sae import SAEAnthropic, train_model
-from saes.utils import load_pre_trained_gpt
+from utils import load_pre_trained_gpt
+from sae import SAEAnthropic, train_model
 from EWOthello.data.othello import get
 from EWOthello.mingpt.dataset import CharDataset
 from EWOthello.mingpt.model import GPT, GPTConfig, GPTforProbing, GPTforProbing_v2
-from tqdm import tqdm
 
 device='cuda' if torch.cuda.is_available() else 'cpu'
-
 
 if __name__=="__main__":
     print("Beginning training process. It may take a moment to load the datasets...")
     probe_path = "EWOthello/ckpts/DeanKLi_GPT_Synthetic_8L8H/"
-    probe_layer = 6
+    probe_layer = 3
     GPT_probe=load_pre_trained_gpt(probe_path=probe_path, probe_layer=probe_layer)
 
     train_dataset = CharDataset(get(ood_num=-1, data_root=None, num_preload=11)) # 11 corresponds to over 1 million games

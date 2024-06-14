@@ -18,6 +18,12 @@ class SAETemplate(torch.nn.Module, ABC):
             param.requires_grad=False 
         self.window_start_trim=window_start_trim
         self.window_end_trim=window_end_trim
+        try:
+            self.residual_stream_mean=torch.load("saes/model_params/residual_stream_mean.pkl", map_location=device)
+            self.average_residual_stream_norm=torch.load("saes/model_params/average_residual_stream_norm.pkl", map_location=device)
+        except:
+            self.residual_stream_mean=torch.zeros((1))
+            self.average_residual_stream_norm=torch.ones((1))
 
     def trim_to_window(self, input, offset=0):
         '''
@@ -33,7 +39,8 @@ class SAETemplate(torch.nn.Module, ABC):
         '''
         residual_stream=self.gpt(token_sequences)
         trimmed_residual_stream=self.trim_to_window(residual_stream)
-        return self.forward(trimmed_residual_stream)
+        residual_stream, hidden_layer, reconstructed_residual_stream=self.forward(trimmed_residual_stream)
+        return residual_stream, hidden_layer, reconstructed_residual_stream
 
     def forward_on_tokens_with_loss(self, token_sequences):
         '''
@@ -128,6 +135,22 @@ class SAEAnthropic(SAETemplate):
         sparsity_loss= torch.mean(hidden_layer)*self.sparsity_coefficient
         total_loss=reconstruction_loss+sparsity_loss
         return total_loss
+
+class SAEDummy(SAETemplate):
+    '''
+    "SAE" whose hidden layer and reconstruction is just the unchanged residual stream
+    '''
+
+    def __init__(self, gpt:GPTforProbing, window_start_trim:int, window_end_trim:int):
+        super().__init__(gpt=gpt, window_start_trim=window_start_trim, window_end_trim=window_end_trim)
+
+    def forward(self, residual_stream):
+        return residual_stream,residual_stream,residual_stream
+
+    def loss_function(self, residual_stream, hidden_layer, reconstructed_residual_stream):
+        return torch.zeros((1))
+
+
 
 def train_model(model:SAETemplate, train_dataset, eval_dataset, batch_size=64, num_epochs=2, report_every_n_steps=500, fixed_seed=1337):
     '''
