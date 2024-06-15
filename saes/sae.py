@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import torch 
 from EWOthello.mingpt.model import GPT, GPTConfig, GPTforProbing, GPTforProbing_v2
 from tqdm import tqdm
+import logging
 
+logger = logging.getLogger(__name__)
 device='cuda' if torch.cuda.is_available() else 'cpu'
 
 class SAETemplate(torch.nn.Module, ABC):
@@ -24,6 +26,7 @@ class SAETemplate(torch.nn.Module, ABC):
         except:
             self.residual_stream_mean=torch.zeros((1))
             self.average_residual_stream_norm=torch.ones((1))
+            logger.warning("Please ensure the correct files are in saes/model_params/residual_stream_mean.pkl and saes/model_params/average_residual_stream_norm.pkl!")
 
     def trim_to_window(self, input, offset=0):
         '''
@@ -35,11 +38,16 @@ class SAETemplate(torch.nn.Module, ABC):
         '''
         runs the SAE on a token sequence
 
-        in particular, takes the intermediate layer of the gpt model on this token sequence, trims it to the right part of the context window, and runs the SAE on that residual stream
+        in particular:
+            1. takes the intermediate layer of the gpt model on this token sequence
+            2. trims it to the right part of the context window
+            3. Normalizes it by subtracting the model mean and dividing by the scale factor
+            4. Runs the SAE on that residual stream
         '''
-        residual_stream=self.gpt(token_sequences)
-        trimmed_residual_stream=self.trim_to_window(residual_stream)
-        residual_stream, hidden_layer, reconstructed_residual_stream=self.forward(trimmed_residual_stream)
+        raw_residual_stream=self.gpt(token_sequences)
+        trimmed_residual_stream=self.trim_to_window(raw_residual_stream)
+        normalized_residual_stream=(trimmed_residual_stream-self.residual_stream_mean)/self.average_residual_stream_norm
+        residual_stream, hidden_layer, reconstructed_residual_stream=self.forward(normalized_residual_stream)
         return residual_stream, hidden_layer, reconstructed_residual_stream
 
     def forward_on_tokens_with_loss(self, token_sequences):
