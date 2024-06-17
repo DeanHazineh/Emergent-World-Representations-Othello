@@ -58,7 +58,7 @@ class SAETemplate(torch.nn.Module, ABC):
         loss = self.loss_function(residual_stream, hidden_layer, reconstructed_residual_stream)
         return loss, residual_stream, hidden_layer, reconstructed_residual_stream
 
-    def catenate_outputs_on_dataset(self, dataset, batch_size=8):
+    def catenate_outputs_on_dataset(self, dataset, batch_size=8, include_loss=False):
         '''
         runs the model on the entire dataset, one batch at a time, catenating the outputs
         '''
@@ -69,19 +69,25 @@ class SAETemplate(torch.nn.Module, ABC):
         test_dataloader=iter(torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False))
         for test_input, test_labels in test_dataloader:
             test_input=test_input.to(device)
-            loss, residual_stream, hidden_layer, reconstructed_residual_stream = self.forward_on_tokens_with_loss(test_input)
-            losses.append(loss)
+            if include_loss:
+                loss, residual_stream, hidden_layer, reconstructed_residual_stream = self.forward_on_tokens_with_loss(test_input)
+                losses.append(loss)
+            else:
+                residual_stream, hidden_layer, reconstructed_residual_stream = self.forward_on_tokens(test_input)
             residual_streams.append(residual_stream)
             hidden_layers.append(hidden_layer)
             reconstructed_residual_streams.append(reconstructed_residual_stream)
-        losses=torch.stack(losses)
         residual_streams=torch.cat(residual_streams)
         hidden_layers=torch.cat(hidden_layers)
         reconstructed_residual_streams=torch.cat(reconstructed_residual_streams)
-        return losses, residual_streams, hidden_layers, reconstructed_residual_streams
+        if include_loss:
+            losses=torch.stack(losses)
+            return losses, residual_streams, hidden_layers, reconstructed_residual_streams
+        else:
+            return residual_streams, hidden_layers, reconstructed_residual_streams
 
     def print_evaluation(self, train_loss, eval_dataset, step_number="N/A"):
-        losses, residual_streams, hidden_layers, reconstructed_residual_streams=self.catenate_outputs_on_dataset(eval_dataset)
+        losses, residual_streams, hidden_layers, reconstructed_residual_streams=self.catenate_outputs_on_dataset(eval_dataset, include_loss=True)
         test_loss=losses.mean()
         l0_sparsity=self.compute_l0_sparsity(hidden_layers)
         dead_features=self.count_dead_features(hidden_layers)
