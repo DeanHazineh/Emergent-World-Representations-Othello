@@ -3,9 +3,21 @@ from EWOthello.data.othello import get
 from EWOthello.mingpt.model import GPTConfig, GPTforProbing
 from EWOthello.mingpt.dataset import CharDataset
 from sae import SAEDummy
+import random
 
 device='cuda' if torch.cuda.is_available() else 'cpu'
 
+
+def load_dataset(split_fraction=1, use_first_half_of_split=True, entries_limit=False, shuffle_seed=1) -> CharDataset:
+    othello = get(ood_num=-1, data_root=None, num_preload=11) # 11 corresponds to over 1 million games
+    random.seed(shuffle_seed)
+    random.shuffle(othello.sequences)
+    split_index=int(split_fraction*len(othello))
+    othello.sequences=othello.sequences[:split_index] if use_first_half_of_split else othello.sequences[split_index:]
+    if entries_limit and entries_limit<len(othello.sequences):
+        othello.sequences=othello.sequences[:entries_limit]
+    dataset=CharDataset(othello)
+    return dataset
 
 def load_pre_trained_gpt(probe_path, probe_layer):
     """
@@ -26,13 +38,10 @@ def find_residual_stream_mean_and_stdev():
     GPT_probe=load_pre_trained_gpt(probe_path=probe_path, probe_layer=probe_layer)
     sae=SAEDummy(gpt=GPT_probe, window_start_trim=4, window_end_trim=4)
 
-    game_dataset = CharDataset(get(ood_num=-1, data_root=None, num_preload=1))
+    game_dataset = load_dataset(entries_limit=10000)
     torch.manual_seed(1)
-    num_games=10000
-    random_indices=torch.randperm(len(game_dataset))[:num_games]
-    eval_subset = torch.utils.data.Subset(game_dataset, random_indices)
 
-    losses, residual_streams, hidden_layers, reconstructed_residual_streams = sae.catenate_outputs_on_dataset(eval_subset, batch_size=8)
+    losses, residual_streams, hidden_layers, reconstructed_residual_streams = sae.catenate_outputs_on_dataset(game_dataset, batch_size=8)
     residual_streams=residual_streams.flatten(end_dim=-2)
     residual_stream_mean=residual_streams.mean(dim=0)
     centered_residual_streams=residual_streams-residual_stream_mean
