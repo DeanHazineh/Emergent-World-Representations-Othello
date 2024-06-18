@@ -6,6 +6,10 @@ from torch.utils.data import DataLoader
 from torcheval.metrics import BinaryAUROC
 
 def compute_all_aurocs(sae: SAETemplate, evaluation_dataset:DataLoader, alternate_players=True):
+    '''
+    computes aurocs of each sae feature on the entire evaluation_dataset
+    returns a shape (N,64,3) tensor, where N is the number of features
+    '''
     _, hidden_layers, __=sae.catenate_outputs_on_dataset(evaluation_dataset, include_loss=False)
     board_states= get_board_states(evaluation_dataset,alternate_players=alternate_players)
     board_states=sae.trim_to_window(board_states)
