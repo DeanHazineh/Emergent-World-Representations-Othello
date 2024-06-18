@@ -120,7 +120,7 @@ class SAETemplate(torch.nn.Module, ABC):
     @abstractmethod
     def loss_function(self, residual_stream, hidden_layer, reconstructed_residual_stream):
         '''
-        loss function which depends solely on residual stream, hidden layer, and reconstruction
+        loss function which depends solely on the sae, residual stream, hidden layer, and reconstruction
         '''
         pass
 
@@ -154,7 +154,8 @@ class SAEAnthropic(SAETemplate):
         return torch.nn.functional.relu(encoder_output)
 
     def sparsity_loss_function(self, hidden_layer):
-        return torch.mean(hidden_layer)
+        decoder_row_norms=self.decoder.norm(dim=1)
+        return torch.mean(hidden_layer*decoder_row_norms)
 
 
 class SAEDummy(SAETemplate):
