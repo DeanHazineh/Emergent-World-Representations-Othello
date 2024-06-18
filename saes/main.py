@@ -1,11 +1,9 @@
 import torch 
 from tqdm import tqdm
 
-from utils import load_pre_trained_gpt
+from utils import load_pre_trained_gpt, load_dataset
 from sae import SAEAnthropic, train_model
-from EWOthello.data.othello import get
-from EWOthello.mingpt.dataset import CharDataset
-from EWOthello.mingpt.model import GPT, GPTConfig, GPTforProbing, GPTforProbing_v2
+from evaluation import compute_all_aurocs
 
 device='cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -15,17 +13,20 @@ if __name__=="__main__":
     probe_layer = 3
     GPT_probe=load_pre_trained_gpt(probe_path=probe_path, probe_layer=probe_layer)
 
-    train_dataset = CharDataset(get(ood_num=-1, data_root=None, num_preload=11)) # 11 corresponds to over 1 million games
+    train_dataset = load_dataset(split_fraction=.95, use_first_half_of_split=True, entries_limit=1000000)
+    test_dataset = load_dataset(split_fraction=.95, use_first_half_of_split=False, entries_limit=1000)
 
-    test_dataset = CharDataset(get(ood_num=-1, data_root=None, num_preload=1))
-    test_set_indices=torch.arange(1000)
-    test_1k_dataset = torch.utils.data.Subset(test_dataset, test_set_indices)
+    sae=SAEAnthropic(gpt=GPT_probe, feature_ratio=2, sparsity_coefficient=10, window_start_trim=4, window_end_trim=4)
 
-    print("\n\n\n")
-    print(len(test_dataset))
-    print("\n\n\n")
-
-    sae=SAEAnthropic(gpt=GPT_probe, feature_ratio=2, sparsity_coefficient=.1, window_start_trim=4, window_end_trim=4)
     print("SAE initialized, proceeding to train!")
+    train_model(sae, train_dataset, test_dataset, report_every_n_steps=500)
 
-    train_model(sae, train_dataset, test_1k_dataset, report_every_n_steps=500)
+    print("Finished SAE training, proceeding to evaluate classifiers!")
+    aurocs=compute_all_aurocs(sae, test_dataset)
+    best_aurocs=aurocs.max(dim=0).values
+    print(f"Number of high-accuracy aurocs: {(best_aurocs>.9).sum()}")
+    
+    
+    save_results_location= "best_aurocs.pkl"
+    torch.save(best_aurocs, save_results_location)
+    print(f"Saved results to {save_results_location}")
